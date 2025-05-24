@@ -84,17 +84,17 @@ public class ABB<T extends Comparable<T>> {
     }
 
     //EXISTE VIAJERO NORMAL
-    public boolean existe(T viajero) {
+    public T existe(T viajero) {
         return existeRec(raiz, viajero);
     }
 
-    private boolean existeRec(NodoABB<T> nodo, T viajero) {
+    private T existeRec(NodoABB<T> nodo, T viajero) {
         if (nodo == null) {
-            return false;
+            return null;
         }
-        if (comparar(viajero, nodo.dato) == 0) {
-            return true;
-        } else if (comparar(viajero, nodo.dato) < 0) {
+        if (viajero.equals(nodo.dato)) {
+            return nodo.dato;
+        } else if (viajero.compareTo(nodo.dato) < 0) {
             return existeRec(nodo.izq, viajero);
         } else {
             return existeRec(nodo.der, viajero);
@@ -113,14 +113,58 @@ public class ABB<T extends Comparable<T>> {
 
         contador[0]++;
 
-        if (comparar(viajero, nodo.dato) == 0) {
+        if (viajero.equals(nodo.dato)) {
             return nodo.dato;
-        } else if (comparar(viajero, nodo.dato) < 0) {
+        } else if (viajero.compareTo(nodo.dato) < 0) {
             return existeConContador(nodo.izq, viajero, contador);
         } else {
             return existeConContador(nodo.der, viajero, contador);
         }
     }
+
+    public String listarAscendente() {
+        String viajerosListados = "";
+        return listarAscendente(raiz, viajerosListados);
+    }
+    private String listarAscendente(NodoABB<T> nodo, String viajerosListados) {
+        if (nodo != null) {
+            viajerosListados = listarAscendente(nodo.izq, viajerosListados);
+            if (!viajerosListados.isEmpty()) {
+                viajerosListados += "|";
+            }
+        viajerosListados += nodo.toString();
+        viajerosListados = listarAscendente(nodo.der, viajerosListados);
+        }
+        return viajerosListados;
+    }
+
+    public String listarDescendente() {
+        String viajerosListados = "";
+        return listarDescendente(raiz, viajerosListados);
+    }
+    private String listarDescendente(NodoABB<T> nodo, String viajerosListados) {
+        if (nodo != null) {
+            viajerosListados = listarAscendente(nodo.der, viajerosListados);
+            if (!viajerosListados.isEmpty()) {
+                viajerosListados += "|";
+            }
+            viajerosListados += nodo.toString();
+            viajerosListados = listarAscendente(nodo.izq, viajerosListados);
+        }
+        return viajerosListados;
+    }
+
+    public int cantidadNodos() {
+        return cantidadNodos(raiz);
+    }
+
+    private int cantidadNodos(NodoABB<T> nodoABB) {
+        if(nodoABB == null) {
+            return 0;
+        }
+        return 1 + cantidadNodos(nodoABB.izq) + cantidadNodos(nodoABB.der);
+    }
+
 
     //CLASE DE NODO
     private class NodoABB<Q> {
