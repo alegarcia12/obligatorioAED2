@@ -3,7 +3,7 @@ package lista;
 
 import java.util.Iterator;
 
-public class Lista<T> implements ILista<T> {
+public class Lista<T> implements ILista<T>, Iterable<T> {
 
     protected NodoLista<T> inicio;
     protected int largo;

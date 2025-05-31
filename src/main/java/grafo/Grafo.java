@@ -1,7 +1,6 @@
 package grafo;
 
 import cola.Cola;
-import dominio.Ciudad;
 import lista.ILista;
 import lista.Lista;
 
@@ -49,7 +48,7 @@ public class Grafo {
         int pos = obtenerPos(v);
         vertices[pos] = null;
 
-        for (int i = 1; i < aristas.length; i++) {
+        for (int i = 0; i < aristas.length; i++) {
             aristas[pos][i].setExiste(false); //Borro aristas adyacentes
             aristas[i][pos].setExiste(false); //Borro aristas incidentes
         }
@@ -61,7 +60,6 @@ public class Grafo {
         int posVfinal = obtenerPos(vFinal);
         Arista a = aristas[posVinicial][posVfinal];
         a.setExiste(true);
-        a.setPeso(arista.getPeso());
     }
 
     public void borrarArista(Vertice vInicio, Vertice vFinal) {
@@ -74,7 +72,14 @@ public class Grafo {
     public Arista obtenerArista(Vertice vInicio, Vertice vFinal) {
         int posVinicial = obtenerPos(vInicio);
         int posVfinal = obtenerPos(vFinal);
-        return aristas[posVinicial][posVfinal];
+        Arista arista = aristas[posVinicial][posVfinal];
+        return (arista != null && arista.getExiste()) ? arista : null;
+    }
+
+    public boolean existeArista(Vertice vInicio, Vertice vFinal) {
+        int posVinicial = obtenerPos(vInicio);
+        int posVfinal = obtenerPos(vFinal);
+        return aristas[posVinicial][posVfinal].getExiste();
     }
 
     public ILista<Vertice> adyacentes(Vertice vertice) {
@@ -147,12 +152,11 @@ public class Grafo {
         return cantidad;
     }
 
-
-    public boolean existeArista(Vertice origen, Vertice destino) {
-        int posOrigen = obtenerPos(origen);
-        int posDestino = obtenerPos(destino);
-        if (posOrigen != -1 && posDestino != -1) {
-            return aristas[posOrigen][posDestino].getExiste();
+    public boolean existeVertice(Vertice ciudadVertice) {
+        for (int i = 0; i < vertices.length; i++) {
+            if (vertices[i] != null && vertices[i].equals(ciudadVertice)) {
+                return true;
+            }
         }
         return false;
     }

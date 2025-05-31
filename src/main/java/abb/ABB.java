@@ -1,8 +1,5 @@
 package abb;
 
-import lista.ILista;
-import lista.Lista;
-
 import java.util.Comparator;
 
 public class ABB<T extends Comparable<T>> {
@@ -19,12 +16,12 @@ public class ABB<T extends Comparable<T>> {
         this.comparador = comparador;
     }
 
-    private int comparar(T dato1, T dato2) {
-        if (this.comparador == null) {
-            return dato1.compareTo(dato2);
-        }
-        return this.comparador.compare(dato1, dato2);
-    }
+//    private int comparar(T dato1, T dato2) {
+//        if (this.comparador == null) {
+//            return dato1.compareTo(dato2);
+//        }
+//        return this.comparador.compare(dato1, dato2);
+//    }
 
     public void insertar(T dato) {
         if (raiz == null) {
@@ -35,7 +32,7 @@ public class ABB<T extends Comparable<T>> {
     }
 
     private void insertar(NodoABB<T> nodo, T dato) {
-        if (comparar(dato, nodo.dato) < 0) {
+        if (dato.compareTo(nodo.dato) < 0) {
             if (nodo.izq == null) {
                 nodo.izq = new NodoABB<>(dato);
             } else {
@@ -59,7 +56,7 @@ public class ABB<T extends Comparable<T>> {
         if (nodo != null) {
             if (dato.equals(nodo.dato)) {
                 return true;
-            } else if (comparar(dato, nodo.dato) < 0) {
+            } else if (dato.compareTo(nodo.dato) < 0) {
                 return pertenece(nodo.izq, dato);
             } else {
                 return pertenece(nodo.der, dato);
@@ -89,16 +86,17 @@ public class ABB<T extends Comparable<T>> {
     }
 
     private T existeRec(NodoABB<T> nodo, T viajero) {
-        if (nodo == null) {
-            return null;
+        if (nodo != null) {
+            if (viajero.equals(nodo.dato)) {
+                return nodo.dato;
+            } else if (viajero.compareTo(nodo.dato) < 0) {
+                return existeRec(nodo.izq, viajero);
+            } else {
+                return existeRec(nodo.der, viajero);
+            }
         }
-        if (viajero.equals(nodo.dato)) {
-            return nodo.dato;
-        } else if (viajero.compareTo(nodo.dato) < 0) {
-            return existeRec(nodo.izq, viajero);
-        } else {
-            return existeRec(nodo.der, viajero);
-        }
+        return null;
+
     }
 
     //EXISTE VIAJERO CON CONTADOR
@@ -126,14 +124,15 @@ public class ABB<T extends Comparable<T>> {
         String viajerosListados = "";
         return listarAscendente(raiz, viajerosListados);
     }
+
     private String listarAscendente(NodoABB<T> nodo, String viajerosListados) {
         if (nodo != null) {
             viajerosListados = listarAscendente(nodo.izq, viajerosListados);
             if (!viajerosListados.isEmpty()) {
                 viajerosListados += "|";
             }
-        viajerosListados += nodo.toString();
-        viajerosListados = listarAscendente(nodo.der, viajerosListados);
+            viajerosListados += nodo.dato.toString();
+            viajerosListados = listarAscendente(nodo.der, viajerosListados);
         }
         return viajerosListados;
     }
@@ -142,14 +141,15 @@ public class ABB<T extends Comparable<T>> {
         String viajerosListados = "";
         return listarDescendente(raiz, viajerosListados);
     }
+
     private String listarDescendente(NodoABB<T> nodo, String viajerosListados) {
         if (nodo != null) {
-            viajerosListados = listarAscendente(nodo.der, viajerosListados);
+            viajerosListados = listarDescendente(nodo.der, viajerosListados);
             if (!viajerosListados.isEmpty()) {
                 viajerosListados += "|";
             }
-            viajerosListados += nodo.toString();
-            viajerosListados = listarAscendente(nodo.izq, viajerosListados);
+            viajerosListados += nodo.dato.toString();
+            viajerosListados = listarDescendente(nodo.izq, viajerosListados);
         }
         return viajerosListados;
     }
@@ -159,7 +159,7 @@ public class ABB<T extends Comparable<T>> {
     }
 
     private int cantidadNodos(NodoABB<T> nodoABB) {
-        if(nodoABB == null) {
+        if (nodoABB == null) {
             return 0;
         }
         return 1 + cantidadNodos(nodoABB.izq) + cantidadNodos(nodoABB.der);
@@ -176,10 +176,10 @@ public class ABB<T extends Comparable<T>> {
             this.dato = dato;
         }
 
-        @Override
-        public String toString() {
-            return "{" + dato +
-                    '}';
+      @Override
+      public String toString() {
+          return "{" + dato +
+                   '}';
         }
     }
 

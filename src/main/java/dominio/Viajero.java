@@ -2,9 +2,12 @@ package dominio;
 
 import interfaz.Categoria;
 
+import java.util.Objects;
+
 public class Viajero implements Comparable<Viajero> {
 
     String cedula;
+    int cedulaSanitizada;
     String nombre;
     String correo;
     int edad;
@@ -16,6 +19,29 @@ public class Viajero implements Comparable<Viajero> {
         this.correo = correo;
         this.edad = edad;
         this.categoria = categoria;
+    }
+
+    public Viajero(String cedula, int cedulaSanitizada, String nombre, String correo, int edad, Categoria categoria) {
+        this.cedula = cedula;
+        this.cedulaSanitizada = cedulaSanitizada;
+        this.nombre = nombre;
+        this.correo = correo;
+        this.edad = edad;
+        this.categoria = categoria;
+    }
+
+    public Viajero(int cedulaSanitizada) {
+        this.cedulaSanitizada = cedulaSanitizada;
+
+    }
+
+
+    public int getCedulaSanitizada() {
+        return cedulaSanitizada;
+    }
+
+    public void setCedulaSanitizada(int cedulaSanitizada) {
+        this.cedulaSanitizada = cedulaSanitizada;
     }
 
     public String getCedula() {
@@ -60,18 +86,23 @@ public class Viajero implements Comparable<Viajero> {
 
     @Override
     public int compareTo(Viajero o) {
-        return this.cedula.compareTo(o.cedula);
+        return Integer.compare(this.cedulaSanitizada, o.cedulaSanitizada);
     }
 
     @Override
     public String toString() {
-        String categoriaTexto;
-        switch (categoria) {
-            case ESTANDAR -> categoriaTexto = "Estándar";
-            case FRECUENTE -> categoriaTexto = "Frecuente";
-            case PLATINO -> categoriaTexto = "Platino";
-            default -> categoriaTexto = categoria.toString();
-        }
-        return cedula + ";" + nombre + ";" + correo + ";" + edad + ";" + categoriaTexto;
+        return cedula + ";" + nombre + ";" + correo + ";" + edad + ";" + categoria.getTexto();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Viajero viajero = (Viajero) o;
+        return cedulaSanitizada == viajero.cedulaSanitizada;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(cedulaSanitizada);
     }
 }

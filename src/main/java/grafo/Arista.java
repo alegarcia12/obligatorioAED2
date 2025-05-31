@@ -1,12 +1,15 @@
 package grafo;
 
-public class Arista {
-    private String peso;
-    private boolean existe;
+import dominio.Vuelo;
+import lista.Lista;
 
-    public Arista(String peso) {
-        this.peso = peso;
-        this.existe = true;
+public class Arista {
+    private boolean existe;
+    private Lista<Vuelo> vuelos;
+
+    public Arista() {
+        this.existe = false;
+        this.vuelos = new Lista<>();
     }
 
     public boolean getExiste() {
@@ -17,11 +20,24 @@ public class Arista {
         this.existe = existe;
     }
 
-    public String getPeso() {
-        return peso;
+    public Lista<Vuelo> getVuelos() {
+        return vuelos;
     }
 
-    public void setPeso(String peso) {
-        this.peso = peso;
+    public void setVuelos(Lista<Vuelo> vuelos) {
+        this.vuelos = vuelos;
+    }
+
+    public boolean existeVuelo(String codigoVuelo) {
+        for (Vuelo v : vuelos) {
+            if (v.getCodigoDeVuelo().equals(codigoVuelo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void agregarVuelo(Vuelo vuelo) {
+        vuelos.insertar(vuelo);
     }
 }

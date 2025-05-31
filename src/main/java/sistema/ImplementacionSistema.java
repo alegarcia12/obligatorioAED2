@@ -1,7 +1,11 @@
 package sistema;
 
 import abb.ABB;
-import dominio.*;
+import dominio.Ciudad;
+import dominio.Viajero;
+import dominio.ViajeroWrapper;
+import dominio.Vuelo;
+import grafo.Arista;
 import grafo.Grafo;
 import grafo.Vertice;
 import interfaz.*;
@@ -12,23 +16,9 @@ public class ImplementacionSistema implements Sistema {
     private ABB<Viajero> viajerosCedulaABB;
     private ABB<ViajeroWrapper> viajerosCorreoABB;
     private boolean sistemaInicializado = false;
-    private ABB <Viajero> viajerosEstandar;
-    private ABB <Viajero> viajerosFrecuentes;
-    private ABB <Viajero> viajerosPlatinos;
-//    private ABB<Viajero> viajeroRango0;
-//    private ABB<Viajero> viajeroRango1;
-//    private ABB<Viajero> viajeroRango2;
-//    private ABB<Viajero> viajeroRango3;
-//    private ABB<Viajero> viajeroRango4;
-//    private ABB<Viajero> viajeroRango5;
-//    private ABB<Viajero> viajeroRango6;
-//    private ABB<Viajero> viajeroRango7;
-//    private ABB<Viajero> viajeroRango8;
-//    private ABB<Viajero> viajeroRango9;
-//    private ABB<Viajero> viajeroRango10;
-//    private ABB<Viajero> viajeroRango11;
-//    private ABB<Viajero> viajeroRango12;
-//    private ABB<Viajero> viajeroRango13;
+    private ABB<Viajero> viajerosEstandar;
+    private ABB<Viajero> viajerosFrecuentes;
+    private ABB<Viajero> viajerosPlatinos;
     private ABB<Viajero>[] viajerosPorRango = new ABB[14];
     private Grafo ciudadesGrafo;
 
@@ -44,20 +34,6 @@ public class ImplementacionSistema implements Sistema {
         this.viajerosEstandar = new ABB<>();
         this.viajerosFrecuentes = new ABB<>();
         this.viajerosPlatinos = new ABB<>();
-//        this.viajeroRango0 = new ABB<>();
-//        this.viajeroRango1 = new ABB<>();
-//        this.viajeroRango2 = new ABB<>();
-//        this.viajeroRango3 = new ABB<>();
-//        this.viajeroRango4 = new ABB<>();
-//        this.viajeroRango5 = new ABB<>();
-//        this.viajeroRango6 = new ABB<>();
-//        this.viajeroRango7 = new ABB<>();
-//        this.viajeroRango8 = new ABB<>();
-//        this.viajeroRango9 = new ABB<>();
-//        this.viajeroRango10 = new ABB<>();
-//        this.viajeroRango11 = new ABB<>();
-//        this.viajeroRango12 = new ABB<>();
-//        this.viajeroRango13 = new ABB<>();
         for (int i = 0; i < 14; i++) {
             viajerosPorRango[i] = new ABB<>();
         }
@@ -68,7 +44,7 @@ public class ImplementacionSistema implements Sistema {
     @Override
     public Retorno registrarViajero(String cedula, String nombre, String correo, int edad, Categoria categoria) {
         if (categoria == null || cedula == null
-                || nombre == null || correo == null || cedula.isEmpty() || nombre.isEmpty() || correo.isEmpty()) {
+                || nombre == null || correo == null || cedula.trim().isEmpty() || nombre.trim().isEmpty() || correo.trim().isEmpty()) {
             return Retorno.error1("Los campos no pueden estar vacios");
         }
         if (!formatoValidoCedula(cedula)) {
@@ -80,14 +56,17 @@ public class ImplementacionSistema implements Sistema {
         if (edad < 0 || edad > 139) {
             return Retorno.error4("Edad no valida");
         }
-        if (existeViajeroCedula(cedula)) {
+
+        int cedulaSanitizada = sanitizarCedula(cedula);
+
+        if (existeViajeroCedula(cedulaSanitizada)) {
             return Retorno.error5("El viajero ya existe");
         }
         if (existeViajeroCorreo(correo)) {
             return Retorno.error6("El correo ya existe");
         }
 
-        Viajero viajero = new Viajero(cedula, nombre, correo, edad, categoria);
+        Viajero viajero = new Viajero(cedula, cedulaSanitizada, nombre, correo, edad, categoria);
         viajerosCedulaABB.insertar(viajero);
         ViajeroWrapper viajeroCorreoWrapper = new ViajeroWrapper(viajero);
         viajerosCorreoABB.insertar(viajeroCorreoWrapper);
@@ -97,8 +76,12 @@ public class ImplementacionSistema implements Sistema {
         return Retorno.ok();
     }
 
+    private int sanitizarCedula(String cedula) {
+        return Integer.parseInt(cedula.replaceAll("[.-]", ""));
+    }
+
     private int obtenerRangoEdad(int edad) {
-        return edad /10;
+        return edad / 10;
     }
 
     private void insertarSegunCategoria(Viajero viajero) {
@@ -121,8 +104,8 @@ public class ImplementacionSistema implements Sistema {
         return viajeroWrapperEncontrado != null;
     }
 
-    private boolean existeViajeroCedula(String cedula) {
-        Viajero viajero = viajerosCedulaABB.existe(new Viajero(cedula, "", "", 0, null));
+    private boolean existeViajeroCedula(int cedula) {
+        Viajero viajero = viajerosCedulaABB.existe(new Viajero(cedula));
         return viajero != null;
     }
 
@@ -138,15 +121,15 @@ public class ImplementacionSistema implements Sistema {
 
     @Override
     public Retorno buscarViajeroPorCedula(String cedula) {
-        if (cedula == null || cedula.isEmpty()) {
+        if (cedula == null || cedula.trim().isEmpty()) {
             return Retorno.error1("Cedula no puede estar vacia");
         }
         if (!formatoValidoCedula(cedula)) {
             return Retorno.error2("Formato de cedula incorrecto");
         }
-
+        int cedulaSanitizada = sanitizarCedula(cedula);
         int[] contador = new int[1];
-        Viajero viajero = viajerosCedulaABB.existe(new Viajero(cedula, "", "", 0, null), contador);
+        Viajero viajero = viajerosCedulaABB.existe(new Viajero(cedulaSanitizada), contador);
         if (viajero == null) {
             return Retorno.error3("El viajero no existe");
         }
@@ -155,7 +138,7 @@ public class ImplementacionSistema implements Sistema {
 
     @Override
     public Retorno buscarViajeroPorCorreo(String correo) {
-        if (correo == null || correo.isEmpty()) {
+        if (correo == null || correo.trim().isEmpty()) {
             return Retorno.error1("Correo no puede estar vacio");
         }
         if (!formatoValidoCorreo(correo)) {
@@ -190,7 +173,7 @@ public class ImplementacionSistema implements Sistema {
 
     @Override
     public Retorno listarViajerosPorCategoria(Categoria unaCategoria) {
-        switch(unaCategoria){
+        switch (unaCategoria) {
             case ESTANDAR:
                 return Retorno.ok(viajerosEstandar.listarAscendente());
             case FRECUENTE:
@@ -204,10 +187,10 @@ public class ImplementacionSistema implements Sistema {
 
     @Override
     public Retorno listarViajerosDeUnRangoAscendente(int rango) {
-        if(rango < 0){
+        if (rango < 0) {
             return Retorno.error1("Rango no puede ser menor a 0");
         }
-        if(rango > 13){
+        if (rango > 13) {
             return Retorno.error2("Rango no puede ser mayor a 13");
         }
         ABB<Viajero> viajerosRango = obtenerABBRango(rango);
@@ -215,38 +198,6 @@ public class ImplementacionSistema implements Sistema {
     }
 
     private ABB<Viajero> obtenerABBRango(int rango) {
-//        switch (rango) {
-//            case 0:
-//                return viajeroRango0;
-//            case 1:
-//                return viajeroRango1;
-//            case 2:
-//                return viajeroRango2;
-//            case 3:
-//                return viajeroRango3;
-//            case 4:
-//                return viajeroRango4;
-//            case 5:
-//                return viajeroRango5;
-//            case 6:
-//                return viajeroRango6;
-//            case 7:
-//                return viajeroRango7;
-//            case 8:
-//                return viajeroRango8;
-//            case 9:
-//                return viajeroRango9;
-//            case 10:
-//                return viajeroRango10;
-//            case 11:
-//                return viajeroRango11;
-//            case 12:
-//                return viajeroRango12;
-//            case 13:
-//                return viajeroRango13;
-//            default:
-//                return null;
-//        }
         return viajerosPorRango[rango];
     }
 
@@ -255,10 +206,10 @@ public class ImplementacionSistema implements Sistema {
         if (ciudadesGrafo.cantVertices() >= maxCiudades) {
             return Retorno.error1("No se pueden registrar mas ciudades");
         }
-        if (codigo == null || nombre == null || codigo.isEmpty() || nombre.isEmpty()) {
+        if (codigo == null || nombre == null || codigo.trim().isEmpty() || nombre.trim().isEmpty()) {
             return Retorno.error2("Los campos no pueden estar vacios");
         }
-        if(existeCiudad(codigo)) {
+        if (existeCiudad(codigo)) {
             return Retorno.error3("La ciudad ya existe");
         }
         Ciudad ciudad = new Ciudad(codigo, nombre);
@@ -275,7 +226,7 @@ public class ImplementacionSistema implements Sistema {
 
     @Override//agregar arista
     public Retorno registrarConexion(String codigoCiudadOrigen, String codigoCiudadDestino) {
-        if (codigoCiudadOrigen == null || codigoCiudadDestino == null || codigoCiudadOrigen.isEmpty() || codigoCiudadDestino.isEmpty()) {
+        if (codigoCiudadOrigen == null || codigoCiudadDestino == null || codigoCiudadOrigen.trim().isEmpty() || codigoCiudadDestino.trim().isEmpty()) {
             return Retorno.error1("Los campos no pueden estar vacios");
         }
         if (!existeCiudad(codigoCiudadOrigen)) {
@@ -286,28 +237,61 @@ public class ImplementacionSistema implements Sistema {
         }
         Vertice origen = new Vertice(codigoCiudadOrigen);
         Vertice destino = new Vertice(codigoCiudadDestino);
-        if (ciudadesGrafo.obtenerArista(origen, destino) != null) {
+        if (ciudadesGrafo.existeArista(origen, destino)) {
             return Retorno.error4("Ya existe una conexion entre las ciudades");
         }
-        ciudadesGrafo.agregarArista(origen, destino, new Arista(0, 0, 0, TipoVuelo.NINGUNO));
+        Arista arista = new Arista();
+        ciudadesGrafo.agregarArista(origen, destino, arista);
         return Retorno.ok();
-
-        }
     }
 
-    @Override
+
+    @Override//agregar nueva info de arista
     public Retorno registrarVuelo(String codigoCiudadOrigen, String codigoCiudadDestino, String codigoDeVuelo, double combustible, double minutos, double costoEnDolares, TipoVuelo tipoDeVuelo) {
-        return Retorno.noImplementada();//agregar nueva info de arista
+        if (combustible <= 0 || minutos <= 0 || costoEnDolares <= 0) {
+            return Retorno.error1("Los campos no pueden ser negativos o iguales a 0");
+        }
+        if (codigoCiudadOrigen == null || codigoCiudadDestino == null || codigoDeVuelo == null || tipoDeVuelo == null || tipoDeVuelo.getTexto().trim().isEmpty()
+                || codigoCiudadOrigen.trim().isEmpty() || codigoCiudadDestino.trim().isEmpty() || codigoDeVuelo.trim().isEmpty()) {
+            return Retorno.error2("Los campos no pueden estar vacios");
+        }
+        if (!existeCiudad(codigoCiudadOrigen)) {
+            return Retorno.error3("La ciudad de origen no existe");
+        }
+        if (!existeCiudad(codigoCiudadDestino)) {
+            return Retorno.error4("La ciudad de destino no existe");
+        }
+
+        Vertice origen = new Vertice(codigoCiudadOrigen);
+        Vertice destino = new Vertice(codigoCiudadDestino);
+
+        if (!ciudadesGrafo.existeArista(origen, destino)) {
+            return Retorno.error5("No existe una conexion entre las ciudades");
+        }
+
+        Arista arista = ciudadesGrafo.obtenerArista(origen, destino);
+
+        if (existeVueloEnArista(arista, codigoDeVuelo)) {
+            return Retorno.error6("Ya existe un vuelo con ese codigo entre las ciudades");
+        }
+        Vuelo vuelo = new Vuelo(codigoCiudadOrigen, codigoCiudadDestino, codigoDeVuelo, combustible, minutos, costoEnDolares, tipoDeVuelo);
+        arista.agregarVuelo(vuelo);
+
+        return Retorno.ok();
     }
 
-    @Override
+    private boolean existeVueloEnArista(Arista arista, String codigoDeVuelo) {
+        return arista.existeVuelo(codigoDeVuelo);
+    }
+
+    @Override//modificar info de arista
     public Retorno actualizarVuelo(String codigoCiudadOrigen, String codigoCiudadDestino, String codigoDeVuelo, double combustible, double minutos, double costoEnDolares, TipoVuelo tipoDeVuelo) {
-        return Retorno.noImplementada();//modificar info de arista
+        return Retorno.noImplementada();
     }
 
-    @Override
+    @Override// recorrida con bfs
     public Retorno listadoCiudadesCantDeEscalas(String codigoCiudadOrigen, int cantidad) {
-        return Retorno.noImplementada(); // recorrida con bfs
+        return Retorno.noImplementada();
     }
 
     @Override
@@ -321,3 +305,4 @@ public class ImplementacionSistema implements Sistema {
     }
 
 }
+
