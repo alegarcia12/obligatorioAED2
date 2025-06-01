@@ -9,6 +9,7 @@ import grafo.Arista;
 import grafo.Grafo;
 import grafo.Vertice;
 import interfaz.*;
+import lista.Lista;
 
 public class ImplementacionSistema implements Sistema {
 
@@ -213,7 +214,7 @@ public class ImplementacionSistema implements Sistema {
             return Retorno.error3("La ciudad ya existe");
         }
         Ciudad ciudad = new Ciudad(codigo, nombre);
-        Vertice ciudadVertice = new Vertice(ciudad.getCodigo());
+        Vertice ciudadVertice = new Vertice(ciudad.getCodigo(), ciudad.getNombre());
 
         ciudadesGrafo.agregarVertice(ciudadVertice);
         return Retorno.ok();
@@ -286,22 +287,124 @@ public class ImplementacionSistema implements Sistema {
 
     @Override//modificar info de arista
     public Retorno actualizarVuelo(String codigoCiudadOrigen, String codigoCiudadDestino, String codigoDeVuelo, double combustible, double minutos, double costoEnDolares, TipoVuelo tipoDeVuelo) {
-        return Retorno.noImplementada();
+
+        if (combustible <= 0 || minutos <= 0 || costoEnDolares <= 0) {
+            return Retorno.error1("Los campos no pueden ser negativos o iguales a 0");
+        }
+        if (codigoCiudadOrigen == null || codigoCiudadDestino == null || codigoDeVuelo == null || tipoDeVuelo == null || tipoDeVuelo.getTexto().trim().isEmpty()
+                || codigoCiudadOrigen.trim().isEmpty() || codigoCiudadDestino.trim().isEmpty() || codigoDeVuelo.trim().isEmpty()) {
+            return Retorno.error2("Los campos no pueden estar vacios");
+        }
+        if (!existeCiudad(codigoCiudadOrigen)) {
+            return Retorno.error3("La ciudad de origen no existe");
+        }
+        if (!existeCiudad(codigoCiudadDestino)) {
+            return Retorno.error4("La ciudad de destino no existe");
+        }
+        Vertice origen = new Vertice(codigoCiudadOrigen);
+        Vertice destino = new Vertice(codigoCiudadDestino);
+        if (!ciudadesGrafo.existeArista(origen, destino)) {
+            return Retorno.error5("No existe una conexion entre las ciudades");
+        }
+        Arista arista = ciudadesGrafo.obtenerArista(origen, destino);
+
+        if (!existeVueloEnArista(arista, codigoDeVuelo)) {
+            return Retorno.error6("No existe un vuelo con ese codigo entre las ciudades");
+        }
+
+        arista.actulizarVuelo(codigoDeVuelo, combustible, minutos, costoEnDolares, tipoDeVuelo);
+
+        return Retorno.ok();
     }
 
     @Override// recorrida con bfs
     public Retorno listadoCiudadesCantDeEscalas(String codigoCiudadOrigen, int cantidad) {
-        return Retorno.noImplementada();
+        if (cantidad < 0) {
+            return Retorno.error1("La cantidad de escalas no puede ser negativa");
+        }
+        if (codigoCiudadOrigen == null || codigoCiudadOrigen.trim().isEmpty()) {
+            return Retorno.error2("El codigo de la ciudad de origen no puede estar vacio");
+        }
+        if (!existeCiudad(codigoCiudadOrigen)) {
+            return Retorno.error3("La ciudad de origen no existe");
+        }
+        Vertice ciudadOrigen = ciudadesGrafo.obtenerVertice(codigoCiudadOrigen);
+        Lista<Vertice> ciudadesVisitadas = new Lista<>();
+        ciudadesVisitadas = ciudadesGrafo.bfsConEscalas(ciudadOrigen, cantidad);
+        ciudadesVisitadas.ordenarLexicograficamentePorCodigo();
+        String resultado = formatearCiudadesVisitadas(ciudadesVisitadas);
+        return Retorno.ok(resultado);
+    }
+
+    private String formatearCiudadesVisitadas(Lista<Vertice> ciudadesVisitadas) {
+        StringBuilder resultado = new StringBuilder();
+        for (int i = 0; i < ciudadesVisitadas.largo(); i++) {
+            Vertice ciudad = ciudadesVisitadas.recuperar(i);
+            if (ciudad != null) {
+                resultado.append(ciudad);
+                if (i < ciudadesVisitadas.largo() - 1) {
+                    resultado.append("|");
+                }
+            }
+        }
+        return resultado.toString();
+
     }
 
     @Override
     public Retorno viajeCostoMinimoMinutos(String codigoCiudadOrigen, String codigoCiudadDestino, TipoVueloPermitido tipoVueloPermitido) {
-        return Retorno.noImplementada();
+
+        if (codigoCiudadOrigen == null || codigoCiudadDestino == null || tipoVueloPermitido == null
+                || codigoCiudadOrigen.trim().isEmpty() || codigoCiudadDestino.trim().isEmpty()) {
+            return Retorno.error1("Los campos no pueden estar vacios");
+        }
+
+        if (!existeCiudad(codigoCiudadOrigen)) {
+            return Retorno.error2("La ciudad de origen no existe");
+        }
+        if (!existeCiudad(codigoCiudadDestino)) {
+            return Retorno.error3("La ciudad de destino no existe");
+        }
+        Vertice ciudadOrigen = ciudadesGrafo.obtenerVertice(codigoCiudadOrigen);
+        Vertice ciudadDestino = ciudadesGrafo.obtenerVertice(codigoCiudadDestino);
+
+        double[] costo = new double[1];
+
+        String camino = ciudadesGrafo.dijkstraConDestinoYCostoMinutos(ciudadOrigen, ciudadDestino, tipoVueloPermitido, costo);
+
+        if (camino == null || camino.isEmpty()) {
+            return Retorno.error4("No existe un camino entre las ciudades");
+        }
+
+        return Retorno.ok((int) Math.round(costo[0]), camino);
     }
 
     @Override
     public Retorno viajeCostoMinimoDolares(String codigoCiudadOrigen, String codigoCiudadDestino, TipoVueloPermitido tipoVueloPermitido) {
-        return Retorno.noImplementada();
+
+        if (codigoCiudadOrigen == null || codigoCiudadDestino == null || tipoVueloPermitido == null
+                || codigoCiudadOrigen.trim().isEmpty() || codigoCiudadDestino.trim().isEmpty()) {
+            return Retorno.error1("Los campos no pueden estar vacios");
+        }
+
+        if (!existeCiudad(codigoCiudadOrigen)) {
+            return Retorno.error2("La ciudad de origen no existe");
+        }
+        if (!existeCiudad(codigoCiudadDestino)) {
+            return Retorno.error3("La ciudad de destino no existe");
+        }
+        Vertice ciudadOrigen = ciudadesGrafo.obtenerVertice(codigoCiudadOrigen);
+        Vertice ciudadDestino = ciudadesGrafo.obtenerVertice(codigoCiudadDestino);
+
+        double[] costo = new double[1];
+
+        String camino = ciudadesGrafo.dijkstraConDestinoYCostoDolares(ciudadOrigen, ciudadDestino, tipoVueloPermitido, costo);
+
+        if (camino == null || camino.trim().isEmpty()) {
+            return Retorno.error4("No existe un camino entre las ciudades");
+        }
+
+        return Retorno.ok((int) Math.round(costo[0]), camino);
     }
 
 }

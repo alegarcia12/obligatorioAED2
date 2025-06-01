@@ -2,11 +2,25 @@ package grafo;
 
 import java.util.Objects;
 
-public class Vertice {
+public class Vertice implements Comparable<Vertice>{
     private String id;
+    private String nombre;
 
     public Vertice(String id) {
         this.id = id;
+    }
+
+    public Vertice(String id, String nombre) {
+        this.id = id;
+        this.nombre = nombre;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getId() {
@@ -31,6 +45,14 @@ public class Vertice {
 
     @Override
     public String toString() {
-        return id;
+        return id + ";" + nombre;
+    }
+
+
+    @Override
+    public int compareTo(Vertice o) {
+        if (o == null || getClass() != o.getClass()) return 0;
+        Vertice otraCiudad = (Vertice) o;
+        return this.id.compareTo(otraCiudad.id);
     }
 }

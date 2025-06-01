@@ -93,6 +93,6 @@ public class Vuelo implements Comparable<Vuelo> {
 
     @Override
     public int compareTo(Vuelo o) {
-        return 0;
+        return this.codigoDeVuelo.compareTo(o.codigoDeVuelo);
     }
 }

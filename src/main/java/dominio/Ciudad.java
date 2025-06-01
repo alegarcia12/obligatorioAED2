@@ -44,4 +44,9 @@ public class Ciudad implements Comparable<Ciudad> {
     public int hashCode() {
         return Objects.hashCode(codigo);
     }
+
+    @Override
+    public String toString() {
+        return getCodigo();
+    }
 }

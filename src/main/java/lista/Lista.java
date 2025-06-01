@@ -1,11 +1,12 @@
 package lista;
 
+import grafo.Vertice;
 
 import java.util.Iterator;
 
-public class Lista<T> implements ILista<T>, Iterable<T> {
+public class Lista<T extends Comparable<T>> implements ILista<T>, Iterable<T> {
 
-    protected NodoLista<T> inicio;
+    protected Nodo<T> inicio;
     protected int largo;
 
     public Lista() {
@@ -15,7 +16,7 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
 
     @Override
     public void insertar(T dato) {
-        inicio = new NodoLista<T>(dato, inicio);
+        inicio = new Nodo<T>(dato, inicio);
         largo++;
     }
 
@@ -31,7 +32,7 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
 
     @Override
     public boolean existe(T dato) {
-        NodoLista<T> aux = inicio;
+        Nodo<T> aux = inicio;
         while (aux != null) {
             if (aux.getDato().equals(dato)) {
                 return true;
@@ -43,7 +44,7 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
 
     @Override
     public T recuperar(T dato) {
-        NodoLista<T> aux = inicio;
+        Nodo<T> aux = inicio;
         while (aux != null) {
             if (aux.getDato().equals(dato)) {
                 return aux.getDato();
@@ -65,11 +66,11 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
 
     @Override
     public void imprimirDatos() {
-        NodoLista<T> aux = inicio;
+        Nodo<T> aux = inicio;
         while (aux != null) {
-            if (aux.getSig() != null){
+            if (aux.getSig() != null) {
                 System.out.print(aux.getDato() + " -> ");
-            }else{
+            } else {
                 System.out.print(aux.getDato());
             }
             aux = aux.getSig();
@@ -77,8 +78,8 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
         System.out.println();
     }
 
-    public void imprimirDatosV2(NodoLista<T> nodo ) {
-        if (nodo!=null){
+    public void imprimirDatosV2(Nodo<T> nodo) {
+        if (nodo != null) {
             System.out.println(nodo.getDato());
             imprimirDatosV2(nodo.getSig());
         }
@@ -86,7 +87,7 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
 
     public Iterator<T> iterator() {
         return new Iterator<T>() {
-            private NodoLista<T> aux = inicio;
+            private Nodo<T> aux = inicio;
 
             @Override
             public boolean hasNext() {
@@ -107,17 +108,75 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
         };
     }
 
+    public T recuperar(int pos) {
+        if (pos < 0 || pos >= largo) {
+            return null;
+        }
+        Nodo<T> aux = inicio;
+        for (int i = 0; i < pos; i++) {
+            aux = aux.getSig();
+        }
+        return aux.getDato();
+    }
 
-    class NodoLista<T>{
+    public void insertarAlFinal(T dato) {
+        if (inicio == null) {
+            inicio = new Nodo<>(dato);
+        } else {
+            Nodo<T> aux = inicio;
+            while (aux.getSig() != null) {
+                aux = aux.getSig();
+            }
+            aux.setSig(new Nodo<>(dato));
+        }
+        largo++;
+    }
+
+    public void agregarAlFinal(T elemento) {
+        if (esVacia() || elemento.compareTo(inicio.getDato()) < 0) {
+            inicio = new Nodo<>(elemento, inicio);
+        } else {
+            Nodo<T> aux = inicio;
+            while (aux.getSig() != null && aux.getSig().getDato().compareTo(elemento) < 0) {
+                aux = aux.getSig();
+            }
+            Nodo<T> nuevo = new Nodo<>(elemento, aux.getSig());
+            aux.setSig(nuevo);
+        }
+        this.largo++;
+    }
+
+    public void ordenarLexicograficamentePorCodigo() {
+
+        if (inicio == null || inicio.getSig() == null) return;
+
+        boolean huboCambios;
+        do {
+            huboCambios = false;
+            Nodo<T> actual = inicio;
+            while (actual != null && actual.getSig() != null) {
+                if (actual.getDato().compareTo(actual.getDato()) > 0) {
+                    T temp = actual.getDato();
+                    actual.setDato(actual.getSig().getDato());
+                    actual.getSig().setDato(temp);
+                    huboCambios = true;
+                }
+                actual = actual.getSig();
+            }
+        } while (huboCambios);
+
+    }
+
+    class Nodo<T> {
         private T dato;
-        private NodoLista<T> sig;
+        private Nodo<T> sig;
 
-        public NodoLista(T dato) {
+        public Nodo(T dato) {
             this.dato = dato;
             this.sig = null;
         }
 
-        public NodoLista(T dato, NodoLista<T> sig) {
+        public Nodo(T dato, Nodo<T> sig) {
             this.dato = dato;
             this.sig = sig;
         }
@@ -130,11 +189,11 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
             this.dato = dato;
         }
 
-        public NodoLista<T> getSig() {
+        public Nodo<T> getSig() {
             return sig;
         }
 
-        public void setSig(NodoLista<T> sig) {
+        public void setSig(Nodo<T> sig) {
             this.sig = sig;
         }
 
@@ -142,6 +201,7 @@ public class Lista<T> implements ILista<T>, Iterable<T> {
         public String toString() {
             return dato.toString();
         }
+
     }
 
 
