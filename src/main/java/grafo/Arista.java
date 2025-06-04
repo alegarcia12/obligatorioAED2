@@ -7,7 +7,6 @@ import lista.Lista;
 public class Arista {
     private boolean existe;
     private Lista<Vuelo> vuelos;
-    private int ponderacion;
 
     public Arista() {
         this.existe = false;
@@ -24,20 +23,6 @@ public class Arista {
 
     public Lista<Vuelo> getVuelos() {
         return vuelos;
-    }
-
-
-
-    public void setVuelos(Lista<Vuelo> vuelos) {
-        this.vuelos = vuelos;
-    }
-
-    public int getPonderacion() {
-        return ponderacion;
-    }
-
-    public void setPonderacion(int ponderacion) {
-        this.ponderacion = ponderacion;
     }
 
     public boolean existeVuelo(String codigoVuelo) {

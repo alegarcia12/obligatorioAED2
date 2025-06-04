@@ -23,32 +23,8 @@ public class Vuelo implements Comparable<Vuelo> {
         this.tipoVuelo = tipoVuelo;
     }
 
-    public String getCodigoOriden() {
-        return codigoOriden;
-    }
-
-    public void setCodigoOriden(String codigoOriden) {
-        this.codigoOriden = codigoOriden;
-    }
-
-    public String getCodigoDestino() {
-        return codigoDestino;
-    }
-
-    public void setCodigoDestino(String codigoDestino) {
-        this.codigoDestino = codigoDestino;
-    }
-
     public String getCodigoDeVuelo() {
         return codigoDeVuelo;
-    }
-
-    public void setCodigoDeVuelo(String codigoDeVuelo) {
-        this.codigoDeVuelo = codigoDeVuelo;
-    }
-
-    public Double getCombustible() {
-        return combustible;
     }
 
     public void setCombustible(Double combustible) {

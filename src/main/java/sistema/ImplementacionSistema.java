@@ -1,7 +1,6 @@
 package sistema;
 
 import abb.ABB;
-import dominio.Ciudad;
 import dominio.Viajero;
 import dominio.ViajeroWrapper;
 import dominio.Vuelo;
@@ -213,10 +212,8 @@ public class ImplementacionSistema implements Sistema {
         if (existeCiudad(codigo)) {
             return Retorno.error3("La ciudad ya existe");
         }
-        Ciudad ciudad = new Ciudad(codigo, nombre);
-        Vertice ciudadVertice = new Vertice(ciudad.getCodigo(), ciudad.getNombre());
-
-        ciudadesGrafo.agregarVertice(ciudadVertice);
+        Vertice ciudad = new Vertice(codigo, nombre);
+        ciudadesGrafo.agregarVertice(ciudad);
         return Retorno.ok();
     }
 
